@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Habit Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Мій трекер звичок</h2>
+        <p>Інтерактивна панель керування звичками через Django REST API.</p>
+
+        <button onclick="fetchHabits()">Завантажити список звичок</button>
+
+        <ul id="habits-list"></ul>
+    </div>
+
+    <script>
+        async function fetchHabits() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/v1/habits/');
+                const data = await response.json();
+
+                const list = document.getElementById('habits-list');
+                list.innerHTML = '';
+
+                if (data.length === 0) {
+                    list.innerHTML = `<div class="empty-state">Список звичок поки порожній.</div>`;
+                    return;
+                }
+
+                data.forEach(habit => {
+                    const li = document.createElement('li');
+
+                    const contentDiv = document.createElement('div');
+
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'habit-title';
+                    titleDiv.textContent = habit.title;
+                    contentDiv.appendChild(titleDiv);
+
+                    if (habit.description) {
+                        const descDiv = document.createElement('div');
+                        descDiv.className = 'habit-desc';
+                        descDiv.textContent = habit.description;
+                        contentDiv.appendChild(descDiv);
+                    }
+
+                    li.appendChild(contentDiv);
+                    list.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Помилка підключення:', error);
+                alert('Не вдалося підключитися до бекенду. Перевірте, чи запущено сервер на порту 8000!');
+            }
+        }
+
+        fetchHabits();
+    </script>
+</body>
+</html>

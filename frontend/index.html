@@ -2,60 +2,34 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Habit Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitTracker — Головна</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h2>Мій трекер звичок</h2>
-        <p>Інтерактивна панель керування звичками через Django REST API.</p>
+        <nav style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #e9ecef; padding-bottom: 15px;">
+            <div>
+                <button type="button" onclick="location.href='index.html'" style="width: auto; padding: 8px 15px; margin-right: 5px;">Головна</button>
+                <button type="button" onclick="location.href='dashboard.html'" style="width: auto; padding: 8px 15px; background-color: #2ecc71;">Мої звички</button>
+            </div>
+            <div id="nav-auth-section"></div>
+        </nav>
 
-        <button onclick="fetchHabits()">Завантажити список звичок</button>
-
-        <ul id="habits-list"></ul>
+        <h2>Ласкаво просимо до HabitTracker!</h2>
+        <p>Інформаційна платформа для відстеження щоденних звичок та досягнення цілей.</p>
+        <div style="background: #fdfdfe; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; text-align: center;">
+            <p style="margin-bottom: 15px;">Для керування власними звичками увійдіть у систему або зареєструйтеся.</p>
+            <button type="button" onclick="location.href='login.html'" style="width: auto; padding: 10px 20px; margin-right: 10px;">Увійти</button>
+            <button type="button" onclick="location.href='register.html'" style="width: auto; padding: 10px 20px; background-color: #2ecc71;">Реєстрація</button>
+        </div>
     </div>
 
+    <script src="auth.js"></script>
     <script>
-        async function fetchHabits() {
-            try {
-                const response = await fetch('http://127.0.0.1:8000/api/v1/habits/');
-                const data = await response.json();
-
-                const list = document.getElementById('habits-list');
-                list.innerHTML = '';
-
-                if (data.length === 0) {
-                    list.innerHTML = `<div class="empty-state">Список звичок поки порожній.</div>`;
-                    return;
-                }
-
-                data.forEach(habit => {
-                    const li = document.createElement('li');
-
-                    const contentDiv = document.createElement('div');
-
-                    const titleDiv = document.createElement('div');
-                    titleDiv.className = 'habit-title';
-                    titleDiv.textContent = habit.title;
-                    contentDiv.appendChild(titleDiv);
-
-                    if (habit.description) {
-                        const descDiv = document.createElement('div');
-                        descDiv.className = 'habit-desc';
-                        descDiv.textContent = habit.description;
-                        contentDiv.appendChild(descDiv);
-                    }
-
-                    li.appendChild(contentDiv);
-                    list.appendChild(li);
-                });
-            } catch (error) {
-                console.error('Помилка підключення:', error);
-                alert('Не вдалося підключитися до бекенду. Перевірте, чи запущено сервер на порту 8000!');
-            }
-        }
-
-        fetchHabits();
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavbar();
+        });
     </script>
 </body>
 </html>

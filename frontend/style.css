@@ -46,6 +46,15 @@ button:hover {
     background-color: #2980b9;
 }
 
+button.logout-btn {
+    background-color: #e74c3c;
+    margin-top: 0;
+}
+
+button.logout-btn:hover {
+    background-color: #c0392b;
+}
+
 ul {
     list-style: none;
     padding: 0;

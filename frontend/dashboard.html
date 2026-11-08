@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitTracker — Мої звички</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #e9ecef; padding-bottom: 15px;">
+            <div>
+                <button type="button" onclick="location.href='index.html'" style="width: auto; padding: 8px 15px; margin-right: 5px;">Головна</button>
+                <button type="button" onclick="location.href='dashboard.html'" style="width: auto; padding: 8px 15px; background-color: #2ecc71;">Мої звички</button>
+            </div>
+            <div id="nav-auth-section"></div>
+        </nav>
+
+        <h2>Керування звичками</h2>
+        <p id="user-greeting"></p>
+
+        <form id="habit-form" style="margin-bottom: 25px;">
+            <div style="margin-bottom: 10px;">
+                <label for="habit-title" style="display: block; margin-bottom: 5px; font-size: 14px; color: #555;">Назва</label>
+                <input type="text" id="habit-title" placeholder="Назва звички" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="habit-desc" style="display: block; margin-bottom: 5px; font-size: 14px; color: #555;">Опис</label>
+                <textarea id="habit-desc" placeholder="Опис звички" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; resize: vertical;"></textarea>
+            </div>
+            <button type="submit">Додати звичку</button>
+        </form>
+
+        <div id="protected-habits-list"></div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!localStorage.getItem('access')) {
+                localStorage.setItem('redirectAfterLogin', 'dashboard.html');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            initNavbar();
+
+            const username = localStorage.getItem('username') || 'Користувач';
+            const greeting = document.getElementById('user-greeting');
+            if (greeting) greeting.innerText = `Авторизований користувач: ${username}`;
+
+            document.getElementById('habit-form').addEventListener('submit', handleCreateHabit);
+            await loadProtectedHabits();
+        });
+
+        async function loadProtectedHabits() {
+            const res = await apiFetch(`${API_BASE}/habits/`);
+            if (res && res.ok) {
+                const habits = await res.json();
+                const container = document.getElementById('protected-habits-list');
+                if (!container) return;
+                if (habits.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Ви ще не додали жодної звички</div>';
+                    return;
+                }
+                container.innerHTML = '<ul>' + habits.map(h => `
+                    <li>
+                        <div>
+                            <div class="habit-title">${h.title}</div>
+                            <div class="habit-desc">${h.description || 'Без опису'}</div>
+                        </div>
+                        <button type="button" onclick="deleteHabit(${h.id})" class="logout-btn" style="width: auto; padding: 6px 12px; font-size: 13px; margin: 0;">Видалити</button>
+                    </li>
+                `).join('') + '</ul>';
+            }
+        }
+
+        async function handleCreateHabit(event) {
+            event.preventDefault();
+            const title = document.getElementById('habit-title').value;
+            const description = document.getElementById('habit-desc').value;
+
+            const res = await apiFetch(`${API_BASE}/habits/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+
+            if (res && res.ok) {
+                document.getElementById('habit-title').value = '';
+                document.getElementById('habit-desc').value = '';
+                await loadProtectedHabits();
+            } else {
+                alert('Помилка створення звички');
+            }
+        }
+
+        async function deleteHabit(id) {
+            if (!confirm('Видалити цю звичку?')) return;
+            const res = await apiFetch(`${API_BASE}/habits/${id}/`, {
+                method: 'DELETE'
+            });
+            if (res && (res.ok || res.status === 204)) {
+                await loadProtectedHabits();
+            } else {
+                alert('Помилка видалення');
+            }
+        }
+    </script>
+</body>
+</html>
